@@ -1,1 +1,1 @@
-add_subdirectory(DaemonConnect)
+add_subdirectory(DaemonClient)

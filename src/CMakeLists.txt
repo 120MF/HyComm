@@ -1,2 +1,1 @@
 add_subdirectory(Daemon)
-add_subdirectory(IpcShared)
