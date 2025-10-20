@@ -1,9 +1,12 @@
-add_executable(HyComm_Daemon src/main.cpp)
-
-target_link_libraries(HyComm_Daemon
-        iceoryx2-cxx::shared-lib-cxx
+add_executable(HyComm_Daemon
+        src/main.cpp
+        src/DaemonNode.cpp
 )
 
-target_include_directories(HyComm_Daemon PUBLIC
-        ${PROJECT_SOURCE_DIR}/include
+target_include_directories(HyComm_Daemon PRIVATE ${LIBNL3_INCLUDE_DIR})
+
+target_link_libraries(HyComm_Daemon PRIVATE
+        iceoryx2-cxx::shared-lib-cxx
+        ${LIBNL3_LIBRARIES}
+        HyComm_IpcShared
 )
