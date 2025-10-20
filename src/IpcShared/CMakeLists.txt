@@ -1,1 +1,1 @@
-add_library(HyComm::IpcShared INTERFACE)
+add_library(HyComm_IpcShared INTERFACE)
