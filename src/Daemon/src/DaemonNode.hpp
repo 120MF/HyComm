@@ -13,12 +13,12 @@ namespace hy::daemon
     {
     public:
         using RequestHandler = std::function<ipc::Response(const ipc::Request&)>;
-        DaemonNode(const RequestHandler& handler);
+        explicit DaemonNode(const RequestHandler& handler);
         void run();
 
     private:
         iox2::Node<iox2::ServiceType::Ipc> m_node;
-        iox2::PortFactoryRequestResponse<iox2::ServiceType::Ipc, ipc::Request, void, ipc::Response, void> m_server;
+        iox2::Server<iox2::ServiceType::Ipc, ipc::Request, void, ipc::Response, void> m_server;
         iox2::Listener<iox2::ServiceType::Ipc> m_listener;
         RequestHandler m_request_handler;
     };

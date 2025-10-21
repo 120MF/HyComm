@@ -3,22 +3,13 @@
 #include <string>
 #include <variant>
 #include <cstdint>
+#include "SerialRequest.hpp"
 
 namespace hy::ipc
 {
-    struct SerialOpenRequest
-    {
-        std::string interface_name;
-        uint32_t baud_rate;
-    };
-
-    struct SerialCloseRequest
-    {
-        std::string interface_name;
-    };
-
     using Request = std::variant<
         SerialOpenRequest,
+        SerialConfigRequest,
         SerialCloseRequest
     >;
 }

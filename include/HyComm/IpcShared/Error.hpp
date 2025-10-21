@@ -1,5 +1,5 @@
-#ifndef HYCOMM_ERROR_HPP
-#define HYCOMM_ERROR_HPP
+#ifndef HYCOMM_DAEMON_ERROR_HPP
+#define HYCOMM_DAEMON_ERROR_HPP
 
 #include <string>
 
@@ -11,6 +11,7 @@ namespace hy::ipc
         PermissionDenied,
         InterfaceNotFound,
         InvalidArguments,
+        AlreadyOpen,
         ResourceCreationFailed, // e.g., socket() failed
         FdTransferFailed, // UDS an FD failed to send
         InternalDaemonError,
@@ -23,4 +24,4 @@ namespace hy::ipc
     };
 }
 
-#endif //HYCOMM_ERROR_HPP
+#endif //HYCOMM_DAEMON_ERROR_HPP
