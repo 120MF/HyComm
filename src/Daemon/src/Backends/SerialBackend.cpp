@@ -25,8 +25,8 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_request(const ipc::Request& 
         return handle_request(*config_req);
     }
 
-    return tl::make_unexpected(ipc::DaemonError{
-        ipc::ErrorCode::InvalidArguments,
+    return tl::make_unexpected(common::Error{
+        common::ErrorCode::InvalidArguments,
         "Unknown request type in SerialBackend"
     });
 }
@@ -37,15 +37,16 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_open(const ipc::SerialOpenRe
     auto it = m_open_devices.find(req.interface_name);
     if (it != m_open_devices.end())
     {
-        return tl::make_unexpected(ipc::DaemonError{
-            ipc::ErrorCode::AlreadyOpen, std::format("Device already open: {}", req.interface_name)
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::AlreadyOpen, std::format("Device already open: {}", req.interface_name)
         });
     }
+
     const int fd = open_serial_port(req);
     if (fd < 0)
     {
-        return tl::make_unexpected(ipc::DaemonError{
-            ipc::ErrorCode::InterfaceNotFound,
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::InterfaceNotFound,
             std::format("Failed to open serial port: {}, {}", req.interface_name, strerror(errno))
         });
     }
@@ -53,17 +54,17 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_open(const ipc::SerialOpenRe
     if (!configure_serial_port(fd, req))
     {
         close(fd);
-        return tl::make_unexpected(ipc::DaemonError{
-            ipc::ErrorCode::InvalidArguments,
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::InvalidArguments,
             std::format("Failed to configure serial port: {}, {}", req.interface_name, strerror(errno))
         });
     }
 
-    if (!common::FdTransfer::send_fd(req.uds_path, fd))
+    if (!common::FdTransfer::connect_and_send(req.uds_path, fd))
     {
         close(fd);
-        return tl::make_unexpected(ipc::DaemonError{
-            ipc::ErrorCode::FdTransferFailed,
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::FdTransferFailed,
             std::format("Failed to send FD via UDS to: {}, {}", req.uds_path, strerror(errno))
         });
     }
@@ -77,8 +78,8 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_config(const ipc::SerialConf
     auto it = m_open_devices.find(req.interface_name);
     if (it == m_open_devices.end())
     {
-        return tl::make_unexpected(ipc::DaemonError{
-            ipc::ErrorCode::InterfaceNotFound,
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::InterfaceNotFound,
             std::format("Device not open: {}", req.interface_name)
         });
     }
@@ -86,8 +87,8 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_config(const ipc::SerialConf
     termios tios;
     if (tcgetattr(fd, &tios) < 0)
     {
-        return tl::make_unexpected(ipc::DaemonError{
-            ipc::ErrorCode::InvalidArguments,
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::InvalidArguments,
             std::format("Failed to read device configuration: {}", strerror(errno))
         });
     }
@@ -104,8 +105,8 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_config(const ipc::SerialConf
 
     if (tcsetattr(fd, TCSANOW, &tios) < 0)
     {
-        return tl::make_unexpected(ipc::DaemonError{
-            ipc::ErrorCode::InvalidArguments,
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::InvalidArguments,
             std::format("Failed to apply configuration: {}", strerror(errno))
         });
     }
@@ -119,8 +120,8 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_close(const ipc::SerialClose
     const auto it = m_open_devices.find(req.interface_name);
     if (it == m_open_devices.end())
     {
-        return tl::make_unexpected(ipc::DaemonError{
-            ipc::ErrorCode::InterfaceNotFound,
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::InterfaceNotFound,
             std::format("Device not open: {}", req.interface_name)
         });
     }

@@ -5,7 +5,7 @@
 
 #include <tl/expected.hpp>
 
-#include "Error.hpp"
+#include <HyComm/Common/Error.hpp>
 
 namespace hy::ipc
 {
@@ -17,7 +17,7 @@ namespace hy::ipc
         GenericSuccessResponse
     >;
 
-    using Response = tl::expected<SuccessResponse, DaemonError>;
+    using Response = tl::expected<SuccessResponse, common::Error>;
 }
 
 

@@ -6,6 +6,8 @@ namespace hy::common
 {
     enum class ErrorCode
     {
+        UnknownError,
+
         SocketCreationFailed,
         SocketBindFailed,
         SocketListenFailed,
@@ -14,6 +16,14 @@ namespace hy::common
         MessageSendFailed,
         MessageReceiveFailed,
         InvalidFdReceived,
+
+        PermissionDenied,
+        InterfaceNotFound,
+        InvalidArguments,
+        AlreadyOpen,
+        ResourceCreationFailed, // e.g., socket() failed
+        FdTransferFailed, // UDS an FD failed to send
+        InternalDaemonError,
     };
 
     struct Error

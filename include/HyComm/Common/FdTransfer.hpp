@@ -7,18 +7,33 @@
 
 namespace hy::common
 {
-    struct UDSPacket
-    {
-        std::string path;
-        int sock_fd;
-    };
-
     class FdTransfer
     {
     public:
-        static tl::expected<std::string, Error> create_listener();
-        static int receive_fd(int listening_socket);
-        static bool send_fd(const std::string& uds_path, int fd_to_send);
+        FdTransfer(const FdTransfer&) = delete;
+        FdTransfer& operator=(const FdTransfer&) = delete;
+
+        FdTransfer(FdTransfer&& other) noexcept;
+        FdTransfer& operator=(FdTransfer&& other) noexcept;
+        ~FdTransfer();
+
+        static tl::expected<FdTransfer, Error> create_listener();
+
+        [[nodiscard]] std::string_view get_socket_path() const;
+
+        [[nodiscard]] tl::expected<int, Error> accept_and_receive() noexcept;
+
+        static tl::expected<void, Error> connect_and_send(
+            const std::string& socket_path,
+            int fd_to_send) noexcept;
+
+    private:
+        int m_listen_socket = -1;
+        std::string m_socket_path;
+
+        explicit FdTransfer(int listen_fd, std::string socket_path) noexcept;
+
+        void cleanup() noexcept;
     };
 }
 

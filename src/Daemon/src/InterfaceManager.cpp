@@ -18,7 +18,7 @@ hy::ipc::Response hy::daemon::InterfaceManager::handle_request(const ipc::Reques
         if (it == m_backend_registry.end())
         {
             return tl::make_unexpected(
-                ipc::DaemonError{ipc::ErrorCode::InvalidArguments, "No backend for this request"});
+                common::Error{common::ErrorCode::InvalidArguments, "No backend for this request"});
         }
 
         return it->second->handle_request(arg);
