@@ -44,7 +44,7 @@ namespace hy::ipc
         Parity parity; // NONE
         FlowControl flow_control; // NONE
         bool rts_dtr_on; // 是否启用RTS/DTR (某些设备需要)
-        std::string socket_path; // Client监听的UDS路径
+        std::string uds_path; // Client监听的UDS路径
     };
 
     struct SerialConfigRequest

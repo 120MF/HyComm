@@ -60,12 +60,12 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_open(const ipc::SerialOpenRe
         });
     }
 
-    if (!common::FdTransfer::connect_and_send(req.socket_path, fd))
+    if (!common::FdTransfer::connect_and_send(req.uds_path, fd))
     {
         close(fd);
         return tl::make_unexpected(common::Error{
             common::ErrorCode::FdTransferFailed,
-            std::format("Failed to send FD via UDS to: {}, {}", req.socket_path, strerror(errno))
+            std::format("Failed to send FD via UDS to: {}, {}", req.uds_path, strerror(errno))
         });
     }
     m_open_devices[req.interface_name] = fd;

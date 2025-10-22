@@ -1,3 +1,4 @@
+#include <cassert>
 #include <chrono>
 #include <cstring>
 #include <unistd.h>
@@ -105,7 +106,7 @@ namespace hy::common
         }
 
         // 等待连接
-        sockaddr_un client_addr;
+        sockaddr_un client_addr{};
         socklen_t addr_len = sizeof(client_addr);
 
         const int conn_fd = accept(m_listen_socket,

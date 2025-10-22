@@ -24,6 +24,8 @@ namespace hy::common
         ResourceCreationFailed, // e.g., socket() failed
         FdTransferFailed, // UDS an FD failed to send
         InternalDaemonError,
+
+        ClientReceiveFailed,
     };
 
     struct Error

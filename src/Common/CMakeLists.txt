@@ -1,4 +1,4 @@
-add_library(HyComm_Common SHARED
+add_library(HyComm_Common
         FdTransfer.cpp
 )
 target_include_directories(HyComm_Common PUBLIC
