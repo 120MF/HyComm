@@ -7,6 +7,12 @@
 
 namespace hy::ipc
 {
+    // 打开接口的请求类型（后期可扩展：CANOpenRequest 等）
+    using OpenRequest = std::variant<
+        SerialOpenRequest
+    >;
+
+    // 通用请求类型
     using Request = std::variant<
         SerialOpenRequest,
         SerialConfigRequest,

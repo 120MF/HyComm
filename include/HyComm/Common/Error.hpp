@@ -8,6 +8,8 @@ namespace hy::common
     {
         UnknownError,
 
+        InvalidRequest,
+
         SocketCreationFailed,
         SocketBindFailed,
         SocketListenFailed,
