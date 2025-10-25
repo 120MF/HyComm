@@ -53,7 +53,15 @@ tl::expected<int, hy::common::Error> hy::detail::Session::open_interface(
     auto initialized_request = request.write_payload(std::move(payload));
     auto pending_response = iox2::send(std::move(initialized_request)).expect("");
 
-    // Step 4: Wait for response
+    // Step 4: Notify Daemon
+    if (const auto res = m_notifier.notify(); !res)
+    {
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::ClientNotifyFailed, ""
+        });
+    }
+
+    // Step 5: Wait for response
     while (m_node.wait(iox::units::Duration::zero()).has_value())
     {
         auto res = pending_response.receive().expect("");
@@ -75,8 +83,80 @@ tl::expected<int, hy::common::Error> hy::detail::Session::open_interface(
     });
 }
 
-hy::ipc::Response hy::detail::Session::control_interface(const ipc::Request& control_request)
+hy::ipc::Response hy::detail::Session::control_interface(const ipc::ConfigRequest& control_request)
 {
+    auto request = m_client.loan_uninit().expect("");
+    auto payload = request.payload();
+    std::visit([&payload](const auto& arg)
+    {
+        payload = ipc::Request(arg);
+    }, control_request);
+    auto initialized_request = request.write_payload(std::move(payload));
+    auto pending_response = iox2::send(std::move(initialized_request)).expect("");
+
+    if (const auto res = m_notifier.notify(); !res)
+    {
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::ClientNotifyFailed, ""
+        });
+    }
+
+    while (m_node.wait(iox::units::Duration::zero()).has_value())
+    {
+        auto res = pending_response.receive().expect("");
+        if (!pending_response.is_connected())
+        {
+            return tl::make_unexpected(common::Error{
+                common::ErrorCode::ClientReceiveFailed, "Failed to receive message from server"
+            });
+        }
+        if (res.has_value())
+        {
+            return res->payload();
+        }
+    }
+    // Timeout: no response received
+    return tl::make_unexpected(common::Error{
+        common::ErrorCode::ClientReceiveFailed, "Timeout waiting for response from server"
+    });
+}
+
+hy::ipc::Response hy::detail::Session::close_interface(const ipc::CloseRequest& close_request)
+{
+    auto request = m_client.loan_uninit().expect("");
+    auto payload = request.payload();
+    std::visit([&payload](const auto& arg)
+    {
+        payload = ipc::Request(arg);
+    }, close_request);
+    auto initialized_request = request.write_payload(std::move(payload));
+    auto pending_response = iox2::send(std::move(initialized_request)).expect("");
+
+    if (const auto res = m_notifier.notify(); !res)
+    {
+        return tl::make_unexpected(common::Error{
+            common::ErrorCode::ClientNotifyFailed, ""
+        });
+    }
+
+    while (m_node.wait(iox::units::Duration::zero()).has_value())
+    {
+        auto res = pending_response.receive().expect("");
+        if (!pending_response.is_connected())
+        {
+            return tl::make_unexpected(common::Error{
+                common::ErrorCode::ClientReceiveFailed, "Failed to receive message from server"
+            });
+        }
+        if (res.has_value())
+        {
+            return res->payload();
+        }
+    }
+    // Timeout: no response received
+    return tl::make_unexpected(common::Error{
+        common::ErrorCode::ClientReceiveFailed, "Timeout waiting for response from server"
+    });
 }
 
 hy::detail::Session::Session() :

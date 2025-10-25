@@ -17,7 +17,9 @@ namespace hy::detail
         Session();
         tl::expected<int, common::Error> open_interface(ipc::OpenRequest& open_request);
 
-        ipc::Response control_interface(const ipc::Request& control_request);
+        ipc::Response control_interface(const ipc::ConfigRequest& control_request);
+
+        ipc::Response close_interface(const ipc::CloseRequest& close_request);
 
     private:
         iox2::Node<iox2::ServiceType::Ipc> m_node;

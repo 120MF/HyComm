@@ -27,6 +27,7 @@ namespace hy::common
         FdTransferFailed, // UDS an FD failed to send
         InternalDaemonError,
 
+        ClientNotifyFailed,
         ClientReceiveFailed,
     };
 

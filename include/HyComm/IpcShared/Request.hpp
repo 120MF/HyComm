@@ -12,6 +12,14 @@ namespace hy::ipc
         SerialOpenRequest
     >;
 
+    using ConfigRequest = std::variant<
+        SerialConfigRequest
+    >;
+
+    using CloseRequest = std::variant<
+        SerialCloseRequest
+    >;
+
     // 通用请求类型
     using Request = std::variant<
         SerialOpenRequest,
