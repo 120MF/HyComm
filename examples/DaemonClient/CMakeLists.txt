@@ -4,4 +4,6 @@ add_executable(HC_Example_DaemonClient
 target_link_libraries(HC_Example_DaemonClient
         iceoryx2-cxx::shared-lib-cxx
         HyComm_IpcShared
+        HyComm_Detail
+        HyComm_Common
 )
