@@ -1,9 +1,10 @@
-#ifndef HYCOMM_SERIALINTERFACE_HPP
-#define HYCOMM_SERIALINTERFACE_HPP
+#ifndef HYCOMM_ECHOINTERFACE_HPP
+#define HYCOMM_ECHOINTERFACE_HPP
 
 #include <HyComm/Detail/GenericInterface.hpp>
-#include <HyComm/Protocols/SerialTraits.hpp>
-#include <HyComm/Configs/SerialConfig.hpp>
+#include <HyComm/Protocols/EchoTraits.hpp>
+#include <HyComm/Configs/EchoConfig.hpp>
+#include <functional>
 
 namespace hy
 {
@@ -13,14 +14,14 @@ namespace hy
 
 namespace hy::interfaces
 {
-    class Serial : public detail::GenericInterface<Serial, protocols::SerialTraits>
+    class Echo : public detail::GenericInterface<Echo, protocols::EchoTraits>
     {
     public:
-        using Traits = protocols::SerialTraits;
-        using ConfigType = configs::SerialConfig;
+        using Traits = protocols::EchoTraits;
+        using ConfigType = configs::EchoConfig;
 
         friend class Manager;
-        friend class InterfaceHandle<Serial>;
+        friend class InterfaceHandle<Echo>;
 
         // Helper struct to enable make_shared with private constructor
         struct PrivateTag
@@ -28,7 +29,7 @@ namespace hy::interfaces
         };
 
         // Public constructor that requires PrivateTag (only Manager can create)
-        Serial(PrivateTag, const int fd, const std::shared_ptr<detail::UringManager>& uring_manager)
+        Echo(PrivateTag, const int fd, const std::shared_ptr<detail::UringManager>& uring_manager)
             : GenericInterface(fd, uring_manager)
         {
         }
@@ -53,7 +54,8 @@ namespace hy::interfaces
 
 namespace hy
 {
-    using Serial = interfaces::Serial;
+    using Echo = interfaces::Echo;
 }
 
-#endif //HYCOMM_SERIALINTERFACE_HPP
+#endif //HYCOMM_ECHOINTERFACE_HPP
+

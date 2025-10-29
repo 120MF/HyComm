@@ -1,20 +1,18 @@
 #include <format>
 #include <future>
+#include <iostream>
 #include <HyComm/Detail/Session.hpp>
 
 #include <HyComm/Common/FdTransfer.hpp>
 
 std::unique_ptr<hy::detail::Session> hy::detail::Session::create()
 {
-    return {};
+    return std::make_unique<Session>();
 }
 
 tl::expected<int, hy::common::Error> hy::detail::Session::open_interface(
     ipc::OpenRequest& open_request)
 {
-    auto request = m_client.loan_uninit().expect("");
-    auto payload = request.payload<>();
-
     std::future<tl::expected<int, common::Error>> uds_fut;
     bool listener_created = false;
 
@@ -43,14 +41,16 @@ tl::expected<int, hy::common::Error> hy::detail::Session::open_interface(
         });
     }
 
-    // Step 2: Construct Request payload
-    std::visit([&payload](const auto& arg)
+    // Step 2: Construct and send request
+    auto request = m_client.loan_uninit().expect("");
+    ipc::Request payload_value;
+    std::visit([&payload_value](const auto& arg)
     {
-        payload = ipc::Request(arg);
+        payload_value = ipc::Request(arg);
     }, open_request);
 
     // Step 3: Send request
-    auto initialized_request = request.write_payload(std::move(payload));
+    auto initialized_request = request.write_payload(std::move(payload_value));
     auto pending_response = iox2::send(std::move(initialized_request)).expect("");
 
     // Step 4: Notify Daemon
@@ -86,12 +86,12 @@ tl::expected<int, hy::common::Error> hy::detail::Session::open_interface(
 hy::ipc::Response hy::detail::Session::control_interface(const ipc::ConfigRequest& control_request)
 {
     auto request = m_client.loan_uninit().expect("");
-    auto payload = request.payload();
-    std::visit([&payload](const auto& arg)
+    ipc::Request payload_value;
+    std::visit([&payload_value](const auto& arg)
     {
-        payload = ipc::Request(arg);
+        payload_value = ipc::Request(arg);
     }, control_request);
-    auto initialized_request = request.write_payload(std::move(payload));
+    auto initialized_request = request.write_payload(std::move(payload_value));
     auto pending_response = iox2::send(std::move(initialized_request)).expect("");
 
     if (const auto res = m_notifier.notify(); !res)
@@ -124,12 +124,12 @@ hy::ipc::Response hy::detail::Session::control_interface(const ipc::ConfigReques
 hy::ipc::Response hy::detail::Session::close_interface(const ipc::CloseRequest& close_request)
 {
     auto request = m_client.loan_uninit().expect("");
-    auto payload = request.payload();
-    std::visit([&payload](const auto& arg)
+    ipc::Request payload_value;
+    std::visit([&payload_value](const auto& arg)
     {
-        payload = ipc::Request(arg);
+        payload_value = ipc::Request(arg);
     }, close_request);
-    auto initialized_request = request.write_payload(std::move(payload));
+    auto initialized_request = request.write_payload(std::move(payload_value));
     auto pending_response = iox2::send(std::move(initialized_request)).expect("");
 
     if (const auto res = m_notifier.notify(); !res)
@@ -162,20 +162,51 @@ hy::ipc::Response hy::detail::Session::close_interface(const ipc::CloseRequest& 
 hy::detail::Session::Session() :
     m_node([]
     {
-        return iox2::NodeBuilder().create<iox2::ServiceType::Ipc>().expect("");
+        std::cout << "Session: Creating IPC node..." << std::endl;
+        std::cout.flush();
+        auto result = iox2::NodeBuilder().create<iox2::ServiceType::Ipc>();
+        std::cout << "Session: Node result has_value = " << result.has_value() << std::endl;
+        std::cout.flush();
+        return std::move(result.expect("Failed to create IPC node"));
     }()),
     m_notifier([this]
     {
-        return m_node.service_builder(iox2::ServiceName::create("HyCommDaemonEvent").expect(""))
-                     .event().open_or_create().expect("")
-                     .notifier_builder().create().expect("");
+        std::cout << "Session: Creating notifier..." << std::endl;
+        std::cout.flush();
+        auto svc_name = iox2::ServiceName::create("HyCommDaemonEvent");
+        std::cout << "Session: Service name result has_value = " << svc_name.has_value() << std::endl;
+        std::cout.flush();
+        auto name = svc_name.expect("Failed to create event service name");
+        auto svc = m_node.service_builder(name)
+                         .event().open_or_create();
+        std::cout << "Session: Event service result has_value = " << svc.has_value() << std::endl;
+        std::cout.flush();
+        auto service = std::move(svc.expect("Failed to open or create event service"));
+        auto notifier = service.notifier_builder().create();
+        std::cout << "Session: Notifier result has_value = " << notifier.has_value() << std::endl;
+        std::cout.flush();
+        return std::move(notifier.expect("Failed to create notifier"));
     }()),
     m_client([this]
     {
-        return m_node.service_builder(iox2::ServiceName::create("HyCommDaemonService").expect(""))
-                     .request_response<ipc::Request, ipc::Response>()
-                     .open_or_create().expect("")
-                     .client_builder().create().expect("");
+        std::cout << "Session: Creating client..." << std::endl;
+        std::cout.flush();
+        auto svc_name = iox2::ServiceName::create("HyCommDaemonServer");
+        std::cout << "Session: Server service name result has_value = " << svc_name.has_value() << std::endl;
+        std::cout.flush();
+        auto name = svc_name.expect("Failed to create server service name");
+        auto svc = m_node.service_builder(name)
+                         .request_response<ipc::Request, ipc::Response>()
+                         .open_or_create();
+        std::cout << "Session: RR service result has_value = " << svc.has_value() << std::endl;
+        std::cout.flush();
+        auto service = std::move(svc.expect("Failed to open or create request-response service"));
+        auto client = service.client_builder().create();
+        std::cout << "Session: Client result has_value = " << client.has_value() << std::endl;
+        std::cout.flush();
+        return std::move(client.expect("Failed to create client"));
     }())
 {
+    std::cout << "Session: Constructor completed!" << std::endl;
+    std::cout.flush();
 }

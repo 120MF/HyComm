@@ -1,15 +1,21 @@
 #include "InterfaceManager.hpp"
 
 #include "Backends/SerialBackend.hpp"
+#include "Backends/EchoBackend.hpp"
 #include <HyComm/IpcShared/SerialRequest.hpp>
+#include <HyComm/IpcShared/EchoRequest.hpp>
 
 hy::daemon::InterfaceManager::InterfaceManager()
 {
     const auto serial_backend = std::make_shared<SerialBackend>();
-
     register_backend_for_request<ipc::SerialOpenRequest>(serial_backend);
     register_backend_for_request<ipc::SerialConfigRequest>(serial_backend);
     register_backend_for_request<ipc::SerialCloseRequest>(serial_backend);
+
+    const auto echo_backend = std::make_shared<EchoBackend>();
+    register_backend_for_request<ipc::EchoOpenRequest>(echo_backend);
+    register_backend_for_request<ipc::EchoConfigRequest>(echo_backend);
+    register_backend_for_request<ipc::EchoCloseRequest>(echo_backend);
 }
 
 hy::ipc::Response hy::daemon::InterfaceManager::handle_request(const ipc::Request& req)

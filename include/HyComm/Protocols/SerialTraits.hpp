@@ -5,6 +5,7 @@
 #include <span>
 
 #include <HyComm/IpcShared/Request.hpp>
+#include <HyComm/Configs/SerialConfig.hpp>
 
 namespace hy::protocols
 {
@@ -25,6 +26,24 @@ namespace hy::protocols
             return ipc::SerialOpenRequest{
                 device_path, baud_rate, data_bits, stop_bits, parity, flow_control, rts_dtr_on, ""
             };
+        }
+
+        static ipc::OpenRequest make_open_request(const configs::SerialConfig& config);
+
+        static ipc::ConfigRequest make_config_request(const configs::SerialConfig& config)
+        {
+            return ipc::SerialConfigRequest{
+                config.device_path,
+                config.data_bits,
+                config.stop_bits,
+                config.parity,
+                config.flow_control
+            };
+        }
+
+        static ipc::CloseRequest make_close_request(const configs::SerialConfig& config)
+        {
+            return ipc::SerialCloseRequest{config.device_path};
         }
 
         static FrameType deserialize(const std::span<const std::byte>& buffer)

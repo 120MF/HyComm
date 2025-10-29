@@ -3,6 +3,7 @@ add_executable(HyComm_Daemon
         src/DaemonNode.cpp
         src/InterfaceManager.cpp
         src/Backends/SerialBackend.cpp
+        src/Backends/EchoBackend.cpp
 )
 
 target_include_directories(HyComm_Daemon PRIVATE

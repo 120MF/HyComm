@@ -22,7 +22,12 @@ hy::ipc::Response hy::daemon::SerialBackend::handle_request(const ipc::Request& 
 
     if (auto* config_req = std::get_if<ipc::SerialConfigRequest>(&req))
     {
-        return handle_request(*config_req);
+        return handle_config(*config_req);
+    }
+
+    if (auto* close_req = std::get_if<ipc::SerialCloseRequest>(&req))
+    {
+        return handle_close(*close_req);
     }
 
     return tl::make_unexpected(common::Error{

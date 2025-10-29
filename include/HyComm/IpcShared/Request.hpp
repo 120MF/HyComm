@@ -4,27 +4,34 @@
 #include <variant>
 #include <cstdint>
 #include "SerialRequest.hpp"
+#include "EchoRequest.hpp"
 
 namespace hy::ipc
 {
     // 打开接口的请求类型（后期可扩展：CANOpenRequest 等）
     using OpenRequest = std::variant<
-        SerialOpenRequest
+        SerialOpenRequest,
+        EchoOpenRequest
     >;
 
     using ConfigRequest = std::variant<
-        SerialConfigRequest
+        SerialConfigRequest,
+        EchoConfigRequest
     >;
 
     using CloseRequest = std::variant<
-        SerialCloseRequest
+        SerialCloseRequest,
+        EchoCloseRequest
     >;
 
     // 通用请求类型
     using Request = std::variant<
         SerialOpenRequest,
         SerialConfigRequest,
-        SerialCloseRequest
+        SerialCloseRequest,
+        EchoOpenRequest,
+        EchoConfigRequest,
+        EchoCloseRequest
     >;
 }
 

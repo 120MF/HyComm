@@ -6,4 +6,6 @@ target_link_libraries(HC_Example_DaemonClient
         HyComm_IpcShared
         HyComm_Detail
         HyComm_Common
+        HyComm_Protocols
+        HyComm_Builders
 )
